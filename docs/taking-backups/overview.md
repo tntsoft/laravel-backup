@@ -71,6 +71,13 @@ This section of the configuration determines which files and databases will be b
               * Determines if symlinks should be followed.
               */
              'follow_links' => false,
+
+            /*
+             * This path is used to make directories in resulting zip-file relative
+             * Set to false to include complete absolute path
+             * Example: base_path()
+             */
+            'relative_path' => false,
          ],
 
          /*
@@ -144,4 +151,4 @@ If something goes wrong copying the zip file to one filesystem, the package will
 ## Get notifications when a backup goes wrong
 
 You can receive a notification when a backup goes wrong. Read
-the section on [notifications](/laravel-backup/v6/sending-notifications/overview) to find out more.
+the section on [notifications](/laravel-backup/v7/sending-notifications/overview) to find out more.

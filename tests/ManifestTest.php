@@ -7,9 +7,11 @@ use Spatie\Backup\Tasks\Backup\Manifest;
 
 class ManifestTest extends TestCase
 {
-    protected string $pathToManifest;
+    /** @var string */
+    protected $pathToManifest;
 
-    protected Manifest $manifest;
+    /** @var \Spatie\Backup\Tasks\Backup\Manifest */
+    protected $manifest;
 
     public function setUp(): void
     {
@@ -99,6 +101,8 @@ class ManifestTest extends TestCase
 
     protected function getTestFiles(): array
     {
-        return collect(range(1, 3))->map(fn (int $number) => $this->getStubDirectory()."/file{$number}.txt")->toArray();
+        return collect(range(1, 3))->map(function (int $number) {
+            return $this->getStubDirectory()."/file{$number}.txt";
+        })->toArray();
     }
 }

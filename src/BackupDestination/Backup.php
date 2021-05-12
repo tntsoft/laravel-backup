@@ -9,16 +9,26 @@ use Spatie\Backup\Tasks\Backup\BackupJob;
 
 class Backup
 {
-    protected bool $exists = true;
+    /** @var \Illuminate\Contracts\Filesystem\Filesystem */
+    protected $disk;
 
-    protected ?Carbon $date = null;
+    /** @var string */
+    protected $path;
 
-    protected ?int $size = null;
+    /** @var bool */
+    protected $exists;
 
-    public function __construct(
-        protected Filesystem $disk,
-        protected string $path,
-    ) {
+    /** @var Carbon */
+    protected $date;
+
+    /** @var int */
+    protected $size;
+
+    public function __construct(Filesystem $disk, string $path)
+    {
+        $this->disk = $disk;
+        $this->path = $path;
+        $this->exists = true;
     }
 
     public function disk(): Filesystem
@@ -44,10 +54,11 @@ class Backup
     {
         if ($this->date === null) {
             try {
+                // try to parse the date from the filename
                 $basename = basename($this->path);
-
                 $this->date = Carbon::createFromFormat(BackupJob::FILENAME_FORMAT, $basename);
-            } catch (InvalidArgumentException) {
+            } catch (InvalidArgumentException $e) {
+                // if that fails, ask the (remote) filesystem
                 $this->date = Carbon::createFromTimestamp($this->disk->lastModified($this->path));
             }
         }
@@ -55,7 +66,10 @@ class Backup
         return $this->date;
     }
 
-    public function sizeInBytes(): float
+    /**
+     * Get the size in bytes.
+     */
+    public function size(): float
     {
         if ($this->size === null) {
             if (! $this->exists()) {
@@ -73,14 +87,9 @@ class Backup
         return $this->disk->readStream($this->path);
     }
 
-    public function delete(): void
+    public function delete()
     {
-        if (! $this->disk->delete($this->path)) {
-            consoleOutput()->error("Failed to delete backup `{$this->path}`.");
-
-            return;
-        }
-
+        $this->disk->delete($this->path);
         $this->exists = false;
 
         consoleOutput()->info("Deleted backup `{$this->path}`.");

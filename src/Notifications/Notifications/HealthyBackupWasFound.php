@@ -5,15 +5,17 @@ namespace Spatie\Backup\Notifications\Notifications;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Messages\SlackAttachment;
 use Illuminate\Notifications\Messages\SlackMessage;
-use Spatie\Backup\Events\HealthyBackupWasFound;
+use Spatie\Backup\Events\HealthyBackupWasFound as HealthyBackupWasFoundEvent;
 use Spatie\Backup\Notifications\BaseNotification;
-use Spatie\Backup\Notifications\Channels\Discord\DiscordMessage;
 
-class HealthyBackupWasFoundNotification extends BaseNotification
+class HealthyBackupWasFound extends BaseNotification
 {
-    public function __construct(
-        public HealthyBackupWasFound $event,
-    ) {
+    /** @var \Spatie\Backup\Events\HealthyBackupWasFound */
+    protected $event;
+
+    public function __construct(HealthyBackupWasFoundEvent $event)
+    {
+        $this->event = $event;
     }
 
     public function toMail(): MailMessage
@@ -40,17 +42,5 @@ class HealthyBackupWasFoundNotification extends BaseNotification
             ->attachment(function (SlackAttachment $attachment) {
                 $attachment->fields($this->backupDestinationProperties()->toArray());
             });
-    }
-
-    public function toDiscord(): DiscordMessage
-    {
-        return (new DiscordMessage())
-            ->success()
-            ->from(config('backup.notifications.discord.username'), config('backup.notifications.discord.avatar_url'))
-            ->title(
-                trans('backup::notifications.healthy_backup_found_subject_title', [
-                'application_name' => $this->applicationName(),
-                ])
-            )->fields($this->backupDestinationProperties()->toArray());
     }
 }

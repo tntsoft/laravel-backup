@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +20,7 @@ abstract class TestCase extends Orchestra
      *
      * @return array
      */
-    protected function getPackageProviders($app): array
+    protected function getPackageProviders($app)
     {
         return [
             BackupServiceProvider::class,
@@ -55,7 +54,10 @@ abstract class TestCase extends Orchestra
         Storage::fake('secondLocal');
     }
 
-    protected function setUpDatabase(Application $app)
+    /**
+     * @param \Illuminate\Foundation\Application $app
+     */
+    protected function setUpDatabase($app)
     {
         touch($this->getTempDirectory().'/database.sqlite');
 
@@ -65,7 +67,7 @@ abstract class TestCase extends Orchestra
         });
     }
 
-    protected function seeInConsoleOutput(string $expectedText): void
+    protected function seeInConsoleOutput($expectedText)
     {
         $consoleOutput = $this->app[Kernel::class]->output();
 
@@ -76,18 +78,18 @@ abstract class TestCase extends Orchestra
         );
     }
 
-    protected function doNotSeeInConsoleOutput(string $unexpectedText): void
+    protected function doNotSeeInConsoleOutput($unExpectedText)
     {
         $consoleOutput = $this->app[Kernel::class]->output();
 
         $this->assertNotContains(
-            $unexpectedText,
+            $unExpectedText,
             $consoleOutput,
-            "Did not expect to see `{$unexpectedText}` in console output: `$consoleOutput`"
+            "Did not expect to see `{$unExpectedText}` in console output: `$consoleOutput`"
         );
     }
 
-    protected function assertFileExistsInZip(string $diskName, string $zipPath, string $fileName): void
+    protected function assertFileExistsInZip(string $diskName, string $zipPath, string $fileName)
     {
         $this->assertTrue(
             $this->fileExistsInZip($diskName, $zipPath, $fileName),
@@ -95,7 +97,7 @@ abstract class TestCase extends Orchestra
         );
     }
 
-    protected function assertFileDoesntExistsInZip(string $diskName, string $zipPath, string $fileName): void
+    protected function assertFileDoesntExistsInZip(string $diskName, string $zipPath, string $fileName)
     {
         $this->assertFalse(
             $this->fileExistsInZip($diskName, $zipPath, $fileName),
@@ -123,7 +125,7 @@ abstract class TestCase extends Orchestra
         return $filePath;
     }
 
-    protected function create1MbFileOnDisk(string $diskName, string $filePath, DateTime $date): void
+    protected function create1MbFileOnDisk(string $diskName, string $filePath, DateTime $date)
     {
         $sourceFile = $this->getStubDirectory().'/1Mb.file';
 
@@ -142,7 +144,7 @@ abstract class TestCase extends Orchestra
         return Storage::disk($diskName)->getDriver()->getAdapter()->getPathPrefix();
     }
 
-    public function setNow(int $year, int $month, int $day, int $hour = 0, int $minutes = 0, int $seconds = 0): void
+    public function setNow($year, $month, $day, $hour = 0, $minutes = 0, $seconds = 0)
     {
         $date = Carbon::create($year, $month, $day, $hour, $minutes, $seconds);
 
@@ -186,7 +188,7 @@ abstract class TestCase extends Orchestra
         $this->initializeDirectory($this->getTempDirectory());
     }
 
-    public function initializeDirectory(string $directory): void
+    public function initializeDirectory(string $directory)
     {
         File::deleteDirectory($directory);
 
@@ -195,7 +197,12 @@ abstract class TestCase extends Orchestra
         $this->addGitignoreTo($directory);
     }
 
-    public function addGitignoreTo(string $directory): void
+    public function removeTempDirectory()
+    {
+        return $this->filesystem->deleteDirectory($this->getTempDirectory());
+    }
+
+    public function addGitignoreTo(string $directory)
     {
         $fileName = "{$directory}/.gitignore";
 

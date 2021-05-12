@@ -10,15 +10,20 @@ use Spatie\Backup\Exceptions\InvalidBackupDestination;
 
 class BackupDestination
 {
-    protected ?Filesystem $disk;
+    /** @var \Illuminate\Contracts\Filesystem\Filesystem */
+    protected $disk;
 
-    protected string $diskName;
+    /** @var string */
+    protected $diskName;
 
-    protected string $backupName;
+    /** @var string */
+    protected $backupName;
 
-    public ?Exception $connectionError = null;
+    /** @var Exception */
+    public $connectionError;
 
-    protected ?BackupCollection $backupCollectionCache = null;
+    /** @var null|\Spatie\Backup\BackupDestination\BackupCollection */
+    protected $backupCollectionCache = null;
 
     public function __construct(Filesystem $disk = null, string $backupName, string $diskName)
     {
@@ -26,7 +31,7 @@ class BackupDestination
 
         $this->diskName = $diskName;
 
-        $this->backupName = (string)preg_replace('/[^a-zA-Z0-9.]/', '-', $backupName);
+        $this->backupName = preg_replace('/[^a-zA-Z0-9.]/', '-', $backupName);
     }
 
     public function disk(): Filesystem
@@ -45,7 +50,7 @@ class BackupDestination
             return 'unknown';
         }
 
-        $adapterClass = $this->disk->getDriver()->getAdapter()::class;
+        $adapterClass = get_class($this->disk->getDriver()->getAdapter());
 
         $filesystemType = last(explode('\\', $adapterClass));
 
@@ -67,12 +72,8 @@ class BackupDestination
         }
     }
 
-    public function write(string $file): void
+    public function write(string $file)
     {
-        if (! is_null($this->connectionError)) {
-            throw InvalidBackupDestination::connectionError($this->diskName);
-        }
-
         if (is_null($this->disk)) {
             throw InvalidBackupDestination::diskNotSet($this->backupName);
         }
@@ -103,16 +104,7 @@ class BackupDestination
             return $this->backupCollectionCache;
         }
 
-        $files = [];
-
-        if (! is_null($this->disk)) {
-            // $this->disk->allFiles() may fail when $this->disk is not reachable
-            // in that case we still want to send the notification
-            try {
-                $files = $this->disk->allFiles($this->backupName);
-            } catch (Exception) {
-            }
-        }
+        $files = is_null($this->disk) ? [] : $this->disk->allFiles($this->backupName);
 
         return $this->backupCollectionCache = BackupCollection::createFromFiles(
             $this->disk,

@@ -7,7 +7,7 @@ use Spatie\Backup\Tasks\Monitor\HealthCheck;
 
 class IsReachable extends HealthCheck
 {
-    public function checkHealth(BackupDestination $backupDestination): void
+    public function checkHealth(BackupDestination $backupDestination)
     {
         $this->failUnless(
             $backupDestination->isReachable(),

@@ -15,6 +15,6 @@ class CleanupWasSuccessfulTest extends TestCase
 
         $this->artisan('backup:clean');
 
-        Event::assertDispatched(CleanupWasSuccessful::class);
+        Event::assertDispatched(CleanupWasSuccessFul::class);
     }
 }

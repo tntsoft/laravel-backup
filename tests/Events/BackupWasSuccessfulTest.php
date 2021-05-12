@@ -15,6 +15,6 @@ class BackupWasSuccessfulTest extends TestCase
 
         $this->artisan('backup:run', ['--only-files' => true]);
 
-        Event::assertDispatched(BackupWasSuccessful::class);
+        Event::assertDispatched(BackupWasSuccessFul::class);
     }
 }
